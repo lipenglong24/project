@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:ldubbo="http://www.lipenglong.com/schema/ldubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.lipenglong.com/schema/ldubbo
+       http://www.lipenglong.com/schema/ldubbo/ldubbo.xsd" default-lazy-init="true">
+
+    <ldubbo:protocol name="ldubbo"/>
+    <ldubbo:service interface="com.lipenglong.ldubbo.api.service.UserService" ref="userService"/>
+</beans>
