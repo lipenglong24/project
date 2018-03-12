@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.example.org/lspring"
+           xmlns="http://www.example.org/lspring"
+           elementFormDefault="qualified">
+    <xs:element name="beans" type="beansType"></xs:element>
+
+    <xs:complexType name="beansType">
+        <xs:sequence>
+            <xs:element name="bean" type="beanType" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="aop" type="aopType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="component-scan" type="component-scanType"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="beanType">
+        <xs:sequence>
+            <xs:element name="property" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="transaction" type="transactionType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="class" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="propertyType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attributeGroup ref="refValueType"/>
+    </xs:complexType>
+
+    <xs:complexType name="transactionType">
+        <xs:sequence>
+            <xs:element name="method" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="aopType">
+        <xs:attribute name="package" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:attributeGroup name="refValueType">
+        <xs:attribute name="ref" type="xs:string" use="optional"/>
+        <xs:attribute name="value" type="xs:anyType" use="optional"/>
+    </xs:attributeGroup>
+
+    <xs:complexType name="component-scanType">
+        <xs:attribute name="base-package" type="xs:string" use="required"/>
+    </xs:complexType>
+</xs:schema>

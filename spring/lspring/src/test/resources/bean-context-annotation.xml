@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.example.org/lspring"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.example.org/lspring
+       ./lspring.xsd">
+
+    <bean name="dataSource" class="com.lipenglong.lspring.jdbc.JdbcTemplate">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:./target/work/t5_tutorial1;shutdown=true"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+    <bean name="transactionManager" class="com.lipenglong.lspring.jdbc.TransactionHandler">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <aop package="com.lipenglong.lspring.service"></aop>
+    <component-scan base-package="com.lipenglong.lspring"/>
+</beans>

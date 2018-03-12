@@ -8,6 +8,7 @@
     <artifactId>portal</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <description>基于ace前端框架的首页portal项目</description>
     <modules>
         <module>portal-web</module>
         <module>portal-service</module>
