@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <title>俄罗斯方块html版</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+</head>
+<body>
+	<center>
+		<p>俄罗斯方块html版(方向键控制移动、加速、旋转)</p>
+	</center>
+	<div style="background: black; position: absolute; left: 350px; width: 240px; height: 320px;">
+		<center><input type="button" value="开始" id="start"/></center>
+	</div>
+	<br>
+	<p>
+		<h2>分数：<span id="showNum">0</span></h2>
+	</p>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<p>
+		<h5><font color="green">2012年8月19日制作(lipl)</font></h5>
+	</P>
+</body>
+<script type="text/javascript" src="./js/jquery.min.js"></script>
+<script type="text/javascript" src="./js/jquery.gamequery-0.7.0.js"></script>
+<script type="text/javascript">
+	var PLAYGROUND_WIDTH = 240;			//游戏屏幕宽
+	var PLAYGROUND_HEIGHT = 320;		//游戏屏幕长
+	var REFRESH_RATE = 15;				//游戏主逻辑的频率(毫秒)
+	var TETRIS_CREATE_RATE = 1000;		//俄罗斯方块的创建监听频率(毫秒)
+	var GAMEOVER = false;				//
+
+	var isKeyPress = false;				//是否有左右、加速按键
+	var keyPressTime = new Date();		//按键时间
+	var pressTimeInterval = 100;		//按键监听的间隔时间(毫秒)
+	var tetrisMoving = false;			//是否存在一个正在移动的方块
+	var normalMovingSpeed = 1;			//俄罗斯方块的正常下落速度
+	var fastMovingSpeed = 4;			//俄罗斯方块的加速下落速度
+	var tetrisNum = 0;					//已产生的方块的个数
+
+	var square_width = 20;				//俄罗斯方块小正方形的宽
+	var square_height = 20;				//俄罗斯方块小正方形的高
+
+	var gameScore = 0;					//游戏分数
+
+
+	var square = new $.gQ.Animation({imageURL: "./image/square.png"});
+
+	$("#start").click(function() {
+		$("div").playground({height: PLAYGROUND_HEIGHT, width: PLAYGROUND_WIDTH, keyTracker: true})
+			.addGroup("gamePlayer", {height: PLAYGROUND_HEIGHT, width: PLAYGROUND_WIDTH});
+		$("#start").remove();
+		beginGame();
+	});
+
+	// 俄罗斯方块游戏主逻辑
+	function beginGame() {
+		$("div").playground({height: PLAYGROUND_HEIGHT, width: PLAYGROUND_WIDTH, keyTracker: true})
+			.addGroup("gamePlayer", {height: PLAYGROUND_HEIGHT, width: PLAYGROUND_WIDTH});
+		$.playground().startGame();
+
+		$("#gamePlayer")
+			.addGroup("squarePlayer", {width: PLAYGROUND_WIDTH, height: PLAYGROUND_HEIGHT});
+
+		$.playground().registerCallback(function() {
+			$(".theMovingSquare").each(function() {
+				if (!checkCollided(this)) {
+					var posy = $(this).y();
+					var tetris_height = $(this).h();
+					var tetris_width = $(this).w();
+					if (posy < PLAYGROUND_HEIGHT - tetris_height) {
+						$(this).y(posy + normalMovingSpeed);
+					}
+
+					if (jQuery.gameQuery.keyTracker[37]) {
+						var now = new Date();
+						var posx = $(this).x();
+						if (posx > 0 && (now - keyPressTime) > pressTimeInterval) {
+							$(this).x(posx - square_width);
+							keyPressTime = now;
+							if (checkCollided(this)) {
+								$(this).x(posx);
+							}
+						}
+						isKeyPress = true;
+					} else if (jQuery.gameQuery.keyTracker[38]) {
+						
+					} else if (jQuery.gameQuery.keyTracker[39]) {
+						var now = new Date();
+						var posx = $(this).x();
+						if (posx < PLAYGROUND_WIDTH - tetris_width 
+								&& (now - keyPressTime) > pressTimeInterval) {
+							$(this).x(posx + square_width);
+							keyPressTime = now;
+							if (checkCollided(this)) {
+								$(this).x(posx);
+							}
+						}
+						isKeyPress = true;
+					} else if (jQuery.gameQuery.keyTracker[40]) {
+						var posy = $(this).y();
+						if (posy + fastMovingSpeed < PLAYGROUND_HEIGHT - tetris_height) {
+							$(this).y(posy + fastMovingSpeed);
+						} else {
+							$(this).y(PLAYGROUND_HEIGHT - tetris_height);
+							checkDestroySquares(this);
+						}
+						isKeyPress = true;
+					} else {
+						isKeyPress = false;
+					}
+
+					if ($(this).y() >= (PLAYGROUND_HEIGHT - tetris_height)) {
+						$(this).removeClass("theMovingSquare");
+						$(this).addClass("theStopedGroup");
+						$(this).children().addClass("theStopedSquare");
+						tetrisMoving = false;
+
+						checkDestroySquares(this);
+					}
+				} else {
+					$(this).removeClass("theMovingSquare");
+					$(this).addClass("theStopedGroup");
+					$(this).children().addClass("theStopedSquare");
+					tetrisMoving = false;
+
+					var posy = $(this).y();
+					$(this).y(parseInt(posy / 10) * 10);
+
+					if ($(this).y() <= 0) {
+						GAMEOVER = true;
+						alert("gameOver");
+						$.playground().pauseGame();
+					} else {
+						checkDestroySquares(this);
+					}
+				}
+			});
+
+			// 删除废弃的方块组
+			$(".theStopedGroup").each(function() {
+				if ($(this).children().length == 0) {
+					$(this).remove();
+				}
+			});
+			
+		}, REFRESH_RATE);
+
+		// 俄罗斯方块的创建
+		$.playground().registerCallback(function() {
+			if (!GAMEOVER && !tetrisMoving) {
+				var name = "squareGroup" + tetrisNum;
+				$("#squarePlayer")[0].tetrisGroup = new TetrisGroup($("#squarePlayer"));
+				$("#squarePlayer")[0].tetrisGroup.createTetrisGroup();
+				tetrisMoving = true;
+			}
+		}, TETRIS_CREATE_RATE);
+
+		// 方块的旋转处理
+		$(document).keydown(function(event) {
+			if (event.keyCode == 38) {
+				rotateTetris($(".theMovingSquare")[0]);
+			}
+		})
+
+	}
+
+	// 检测碰撞
+	function checkCollided(obj) {
+		var isCollided = false;
+		var squares = $(obj).children();
+		$.each(squares, function(index, square) {
+			var squareCollision = $(square).collision(".theStopedSquare, ." + $.gQ.groupCssClass);
+			if (squareCollision.length > 0) {
+				isCollided = true;
+			}
+		});
+		return isCollided;
+	}
+
+	// 检测是否可销毁当前行
+	function checkDestroySquares(node) {
+		var nowPosy = $(node).y();
+		var height = $(node).h();
+		for (var i = height - square_height; i >=0; i -= square_height) {
+			var num = 0;
+			var toCheckPos = nowPosy + i;
+			$(".theStopedSquare").each(function() {
+				var parentDiv = $(this).parent();
+				var parentDivTop = $(parentDiv).y();
+				var thisPosy = $(this).y();
+				if (thisPosy + parentDivTop == toCheckPos) {
+					$(this).attr("title", "DEL");
+					num ++;
+				}
+			});
+			if (num == 12) {
+				$(".theStopedSquare[title=DEL]").remove();
+				$(".theStopedSquare").each(function() {
+					var parentDiv = $(this).parent();
+					var parentDivTop = $(parentDiv).y();
+					var thisPosy = $(this).y();
+					if (thisPosy + parentDivTop <= toCheckPos - square_height) {
+						$(this).y(thisPosy + square_height);
+					}
+				})
+
+				i += square_height;
+				gameScore += 10;
+				$("#showNum").text(gameScore);
+			} else {
+				$(".theStopedSquare").removeAttr("title");
+			}
+		};
+		return true;
+	}
+
+	// 旋转俄罗斯方块的方法
+	function rotateTetris(node) {
+		var groupWidth = $(node).w();
+		var groupHeight = $(node).h();
+		var nowPosx = $(node).x();
+		var nowPosy = $(node).y();
+
+		if (nowPosx + groupHeight > PLAYGROUND_WIDTH) {
+			return false;
+		}
+		if (nowPosy + groupWidth > PLAYGROUND_HEIGHT) {
+			return false;
+		}
+
+		$(node).wh(groupHeight, groupWidth);
+
+		if (groupWidth == square_width || groupWidth == 4 * square_width) {
+			$(node).children().each(function() {
+				var posx = $(this).x();
+				var posy = $(this).y();
+				$(this).xy(posy, posx);
+			});
+		} else if (groupWidth == 2 * square_width && groupHeight == 3 * square_height) {
+			$(node).children().each(function() {
+				var posx = $(this).x();
+				var posy = $(this).y();
+				switch (posx / square_width + "" + posy / square_height) {
+					case "00" : $(this).xy(2 * square_height, 0); break;
+					case "01" : $(this).xy(1 * square_height, 0); break;
+					case "02" : $(this).xy(0, 0); break;
+					case "10" : $(this).xy(2 * square_height, square_width); break;
+					case "11" : $(this).xy(square_height, square_width); break;
+					case "12" : $(this).xy(0, square_width); break;
+				}
+			});
+		} else if (groupWidth == 3 * square_width) {
+			$(node).children().each(function() {
+				var posx = $(this).x();
+				var posy = $(this).y();
+				switch (posx / square_width + "" + posy / square_height) {
+					case "00" : $(this).xy(square_height, 0); break;
+					case "01" : $(this).xy(0, 0); break;
+					case "10" : $(this).xy(square_height, square_width); break;
+					case "11" : $(this).xy(0, square_width); break;
+					case "20" : $(this).xy(square_height, 2 * square_width); break;
+					case "21" : $(this).xy(0, 2 * square_width); break;
+				}
+			})
+		}
+	}
+
+	/*俄罗斯方块游戏对象组类*/
+	function TetrisGroup(node) {
+		this.node = node;
+		this.name = "squareGroup" + tetrisNum ++;
+		this.random;
+		this.height;
+		this.width;
+
+		this.createTetrisGroup = function() {
+			this.random = Math.floor(Math.random() * 10);
+			switch (this.random) {
+				case 0 : {
+					this.height = 2 * square_height;
+					this.width = 2 * square_width}
+					break;
+				case 1 : {
+					this.height = 4 * square_height;
+					this.width = 1 * square_width}
+					break;
+				case 2 : ;
+				case 3 : ;
+				case 4 : ;
+				case 5 : {
+					this.height = 3 * square_height;
+					this.width = 2 * square_width}
+					break;
+				case 6 : ;
+				case 7 : ;
+				case 8 : {
+					this.height = 2 * square_height;
+					this.width = 3 * square_width}
+					break;
+				case 9 : {
+					this.height = 1 * square_height;
+					this.width = 4 * square_width;
+				}
+			}
+
+			$(this.node).addGroup(this.name, {height: this.height, width: this.width, posx: PLAYGROUND_WIDTH / 2 - square_width, posy: -1 * this.height});
+			$("#" + this.name).addClass("theMovingSquare");
+
+			$("#" + this.name)[0].tetris = new Tetris($("#" + this.name));
+			$("#" + this.name)[0].tetris.createTetris();
+		};
+
+		return true;
+	}
+
+	/*俄罗斯方块游戏对象类*/
+	function Tetris(node) {
+		this.node = node;
+		this.tetrisGroupHeight = $(node).h();
+		this.tetrisGroupWidth = $(node).w();
+		this.pos = new Array(4);
+		this.pos[1] = new Array();
+		this.pos[2] = new Array();
+		this.pos[3] = new Array();
+		this.pos[4] = new Array();
+
+		this.createTetris = function() {
+			switch (this.tetrisGroupWidth / 20) {
+				case 1 : {
+					this.initPos(1, 0, 0);
+					this.initPos(2, 0, square_height);
+					this.initPos(3, 0, 2 * square_height);
+					this.initPos(4, 0, 3 * square_height)}
+					break;
+				case 2 : {
+					if (this.tetrisGroupHeight == 2 * square_height) {
+						this.initPos(1, 0, 0);
+						this.initPos(2, square_width, 0);
+						this.initPos(3, 0, square_height);
+						this.initPos(4, square_width, square_height);
+					} else {
+						var tempRandom = Math.floor(Math.random() * 8);
+						switch (tempRandom) {
+							case 0 : {
+								this.initPos(1, 0, 0);
+								this.initPos(2, square_width, 0);
+								this.initPos(3, 0, square_height);
+								this.initPos(4, 0, 2 * square_height)}
+								break;
+							case 1 : {
+								this.initPos(1, 0, 0);
+								this.initPos(2, 0, square_height);
+								this.initPos(3, 0, 2 * square_height);
+								this.initPos(4, square_width, 2 * square_height)}
+								break;
+							case 2 : {
+								this.initPos(1, square_width, 0);
+								this.initPos(2, square_width, square_height);
+								this.initPos(3, 0, 2 * square_height);
+								this.initPos(4, square_width, 2 * square_height)}
+								break;
+							case 3 : {
+								this.initPos(1, 0, 0);
+								this.initPos(2, square_width, 0);
+								this.initPos(3, square_width, square_height);
+								this.initPos(4, square_width, 2 * square_height)}
+								break;
+							case 4 : {
+								this.initPos(1, 0, 0);
+								this.initPos(2, 0, square_height);
+								this.initPos(3, square_width, square_height);
+								this.initPos(4, square_width, 2 * square_height)}
+								break;
+							case 5 : {
+								this.initPos(1, square_width, 0);
+								this.initPos(2, 0, square_height);
+								this.initPos(3, square_width, square_height);
+								this.initPos(4, 0, 2 * square_height)}
+								break;
+							case 6 : {
+								this.initPos(1, 0, 0);
+								this.initPos(2, 0, square_height);
+								this.initPos(3, square_width, square_height);
+								this.initPos(4, 0, 2 * square_height)}
+								break;
+							case 7 : {
+								this.initPos(1, square_width, 0);
+								this.initPos(2, 0, square_height);
+								this.initPos(3, square_width, square_height);
+								this.initPos(4, square_width, 2 * square_height)}
+								break;
+						}
+					}}
+					break;
+				case 3 : {
+					var tempRandom = Math.floor(Math.random() * 8);
+					switch (tempRandom) {
+						case 0 : {
+							this.initPos(1, 0, 0);
+							this.initPos(2, 0, square_height);
+							this.initPos(3, square_width, square_height);
+							this.initPos(4, 2 * square_width, square_height)}
+							break;
+						case 1 : {
+							this.initPos(1, square_width, 0);
+							this.initPos(2, 0, square_height);
+							this.initPos(3, square_width, square_height);
+							this.initPos(4, 2 * square_width, square_height)}
+							break;
+						case 2 : {
+							this.initPos(1, 2 * square_width, 0);
+							this.initPos(2, 0, square_height);
+							this.initPos(3, square_width, square_height);
+							this.initPos(4, 2 * square_width, square_height)}
+							break;
+						case 3: {
+							this.initPos(1, 0, 0);
+							this.initPos(2, square_width, 0);
+							this.initPos(3, 2 * square_width, 0);
+							this.initPos(4, 0, square_height)}
+							break;
+						case 4 : {
+							this.initPos(1, 0, 0);
+							this.initPos(2, square_width, 0);
+							this.initPos(3, 2 * square_width, 0);
+							this.initPos(4, square_width, square_height)}
+							break;
+						case 5 : {
+							this.initPos(1, 0, 0);
+							this.initPos(2, square_width, 0);
+							this.initPos(3, 2 * square_width, 0);
+							this.initPos(4, 2 * square_width, square_height)}
+							break;
+						case 6 : {
+							this.initPos(1, 0, 0);
+							this.initPos(2, square_width, 0);
+							this.initPos(3, square_width, square_height);
+							this.initPos(4, 2 * square_width, square_height)}
+							break;
+						case 7 : {
+							this.initPos(1, square_width, 0);
+							this.initPos(2, 2 * square_width, 0);
+							this.initPos(3, 0, square_height);
+							this.initPos(4, square_width, square_height)}
+							break;
+					}}
+					break;
+				case 4 : {
+					this.initPos(1, 0, 0);
+					this.initPos(2, square_width, 0);
+					this.initPos(3, 2 * square_width, 0);
+					this.initPos(4, 3 * square_width, 0)}
+					break;
+ 			}
+
+			$(this.node)
+				.addSprite("square1_" + (tetrisNum - 1), {animation: square, width: square_width, height: square_height, posx: this.pos[1]["posx"], posy: this.pos[1]["posy"]})
+				.addSprite("square2_" + (tetrisNum - 1), {animation: square, width: square_width, height: square_height, posx: this.pos[2]["posx"], posy: this.pos[2]["posy"]})
+				.addSprite("square3_" + (tetrisNum - 1), {animation: square, width: square_width, height: square_height, posx: this.pos[3]["posx"], posy: this.pos[3]["posy"]})
+				.addSprite("square4_" + (tetrisNum - 1), {animation: square, width: square_width, height: square_height, posx: this.pos[4]["posx"], posy: this.pos[4]["posy"]});
+		};
+
+		this.initPos = function(i, x, y) {
+			this.pos[i]["posx"] = x;
+			this.pos[i]["posy"] = y;
+		};
+
+		return true;
+	}
+</script>
+</html>
