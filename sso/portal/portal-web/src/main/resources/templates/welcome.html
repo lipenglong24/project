@@ -70,11 +70,6 @@
                     <i class="ace-icon fa fa-star orange"></i>
                     系统公告
                 </h4>
-                <div class="widget-toolbar">
-                    <a href="#" data-action="collapse">
-                        <i class="ace-icon fa fa-chevron-up"></i>
-                    </a>
-                </div>
             </div>
 
             <div class="widget-body">
@@ -94,15 +89,13 @@
     </div>
 </div>
 
-<!--[if lte IE 8]>
-<script src="/ace/js/excanvas.min.js"></script>
-<![endif]-->
-
-<!-- ace scripts -->
-<script src="/ace/js/ace-elements.min.js"></script>
-<script src="/ace/js/ace.min.js"></script>
 <script type="text/javascript">
     $(function () {
+        var array = document.domain.split(".");
+        if (array.length > 2) {
+            document.domain = array[array.length - 2] + "." + array[array.length - 1];
+        }
+
         var height = document.body.scrollHeight;
         window.parent.setPageHeight(height);
         window.parent.cursorBackToTop();
