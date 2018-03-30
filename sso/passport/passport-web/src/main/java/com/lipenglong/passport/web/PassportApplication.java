@@ -4,12 +4,13 @@ import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * passport启动类
@@ -17,6 +18,8 @@ import org.springframework.context.annotation.Bean;
  * Created by lipenglong on 2017/10/23.
  */
 @SpringBootApplication
+@ComponentScan(value = {"com.lipenglong.passport"})
+@MapperScan(value = "com.lipenglong.passport.dao")
 public class PassportApplication {
     public static void main(String[] args) {
         SpringApplication.run(PassportApplication.class, args);

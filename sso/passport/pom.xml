@@ -11,6 +11,9 @@
     <description>passport用户单点登录,认证项目</description>
     <modules>
         <module>passport-web</module>
+        <module>passport-service</module>
+        <module>passport-dao</module>
+        <module>passport-domain</module>
     </modules>
 
     <parent>
@@ -37,4 +40,24 @@
             <scope>runtime</scope>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.lipenglong.sso</groupId>
+                <artifactId>passport-service</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lipenglong.sso</groupId>
+                <artifactId>passport-dao</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lipenglong.sso</groupId>
+                <artifactId>passport-domain</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

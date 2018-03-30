@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-store"/>
@@ -29,13 +30,22 @@
         <div class="login_name">
             <p>Abc管理系统</p>
         </div>
-        <form id="loginForm" method="post" action="/login" class="form-horizontal">
+        <div class="input-group error-msg">
+            <p class="text-danger text-left">
+                <span th:if="${param.error}" class="glyphicon glyphicon-exclamation-sign">你输入的密码和账户名不匹配</span>
+                <span th:if="${param.logout}" class="glyphicon glyphicon-exclamation-sign">你已退出登录</span>
+                <span id="errorMsg" class="glyphicon glyphicon-exclamation-sign" style="display: none"></span>
+                &nbsp;
+            </p>
+        </div>
+        <form id="loginForm" method="post" th:action="@{/login}" class="form-horizontal">
             <div class="form-group">
                 <div class="input-group">
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-user"></span>
                     </span>
-                    <input name="username" type="text" class="form-control input_lg" placeholder="账号/邮箱/手机号"/>
+                    <input name="username" type="text" class="form-control input_lg" placeholder="账号/邮箱/手机号"
+                           maxlength="50"/>
                     <a class="form-input-clear glyphicon glyphicon-remove hide"></a>
                 </div>
             </div>
@@ -44,18 +54,21 @@
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-lock"></span>
                     </span>
-                    <input name="password" type="password" class="form-control input_lg" placeholder="密码"/>
+                    <input name="lpassword" type="password" class="form-control input_lg" placeholder="密码"
+                           maxlength="100"/>
+                    <input name="password" type="hidden" value=""/>
                     <a class="form-input-clear glyphicon glyphicon-remove hide"></a>
                 </div>
             </div>
             <div class="form-group">
-                <button class="btn btn-danger btn-block font16" type="submit">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
+                <button class="btn btn-danger btn-block font18" type="submit">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
             </div>
             <div class="form-group text-right">
                 <a href="/" class="text-muted">忘记密码</a>&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="/" class="text-muted">免费注册</a>
             </div>
         </form>
+        <input type="hidden" id="_pk_" th:value="${publicKey}"/>
     </div>
     <div class="copyright text-muted">Abc company CopyRight &copy; 2018</div>
 </div>
@@ -64,6 +77,8 @@
 <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"
         integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
         crossorigin="anonymous"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jsencrypt.js"></script>
 <script type="text/javascript">
     $(function () {
         $("input[name='username']").focus();
@@ -78,7 +93,37 @@
             $(this).prev().val("").focus();
             $(this).addClass("hide");
         });
+
+        $("#loginForm").validate({
+            submitHandler: function (form) {
+                $(".glyphicon-exclamation-sign").hide();
+                var errorMsg = "";
+                var username = $(form).find("input[name='username']");
+                var lpassword = $(form).find("input[name='lpassword']");
+                if (username.val().trim() == '' && lpassword.val().trim() == '') {
+                    errorMsg = "请输入账号和密码";
+                } else if (username.val().trim() == '') {
+                    errorMsg = "请输入账号";
+                } else if (lpassword.val().trim() == '') {
+                    errorMsg = "请输入密码";
+                }
+                if (errorMsg != '') {
+                    $("#errorMsg").text(errorMsg).show();
+                    return false;
+                }
+
+                var pwd = $(form).find("input[name='password']");
+                $(pwd).val(encryptPwd($(lpassword).val()));
+                form.submit();
+            }
+        });
     });
+
+    function encryptPwd(pwd) {
+        var crypt = new JSEncrypt();
+        crypt.setKey($("#_pk_").val());
+        return crypt.encrypt(pwd);
+    }
 </script>
 </body>
 </html>
