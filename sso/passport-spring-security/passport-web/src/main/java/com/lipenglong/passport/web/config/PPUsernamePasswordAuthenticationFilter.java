@@ -2,6 +2,7 @@ package com.lipenglong.passport.web.config;
 
 import com.lipenglong.passport.web.util.RSAUtil;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.util.NumberUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,6 +23,12 @@ public class PPUsernamePasswordAuthenticationFilter extends UsernamePasswordAuth
     @Override
     protected String obtainPassword(HttpServletRequest request) {
         String password = super.obtainPassword(request);
-        return RSAUtil.decrypt(password, RSAUtil.getPrivateKey(privateKey));
+        password = RSAUtil.decrypt(password, RSAUtil.getPrivateKey(privateKey));
+        String timeStr = password.substring(password.lastIndexOf("-") + 1);
+        if (System.currentTimeMillis() - NumberUtils.parseNumber(timeStr, Long.class) > 1000 * 60) {
+            return null;
+        }
+        password = password.substring(0, password.lastIndexOf("-"));
+        return password;
     }
 }

@@ -3,7 +3,7 @@ package com.lipenglong.passport.domain;
 import java.util.Date;
 
 /**
- * 用户实体类F
+ * 用户实体类
  * <p/>
  * Created by lipenglong on 2017/10/23.
  */

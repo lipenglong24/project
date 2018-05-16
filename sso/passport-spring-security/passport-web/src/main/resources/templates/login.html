@@ -122,7 +122,7 @@
     function encryptPwd(pwd) {
         var crypt = new JSEncrypt();
         crypt.setKey($("#_pk_").val());
-        return crypt.encrypt(pwd);
+        return crypt.encrypt(pwd + "-" + new Date().getTime());
     }
 </script>
 </body>
