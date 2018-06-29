@@ -18,7 +18,7 @@ import java.util.List;
 public class IndexServiceImpl implements IndexService {
     @Override
     public List<Menu> queryMenuList() {
-        List<Menu> menuList = new ArrayList<>();
+        List<Menu> menuList = new ArrayList<Menu>();
         String fileName = "menu.properties";
         String[] menuCodes = PropertiesUtil.getValue(fileName, "menu_code").split(",");
         String[] menuNames = PropertiesUtil.getValue(fileName, "menu_name").split(",");
@@ -29,7 +29,7 @@ public class IndexServiceImpl implements IndexService {
             menu.setName(menuNames[i]);
             menu.setIcon(menuIcons[i]);
 
-            List<Menu> itemList = new ArrayList<>();
+            List<Menu> itemList = new ArrayList<Menu>();
             String[] itemCodes = PropertiesUtil.getValue(fileName, "item_" + menu.getId() + "_code").split(",");
             String[] itemNames = PropertiesUtil.getValue(fileName, "item_" + menu.getId() + "_name").split(",");
             String[] itemUrls = PropertiesUtil.getValue(fileName, "item_" + menu.getId() + "_url").split(",");
