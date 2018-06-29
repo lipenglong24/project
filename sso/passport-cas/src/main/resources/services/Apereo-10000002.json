@@ -1,0 +1,9 @@
+{
+  "@class" : "org.apereo.cas.services.RegexRegisteredService",
+  "serviceId" : "^http://passport.cas.com.*",
+  "name" : "passport-cas",
+  "theme" : "apereo",
+  "id" : 10000002,
+  "description" : "passport service",
+  "evaluationOrder" : 1
+}

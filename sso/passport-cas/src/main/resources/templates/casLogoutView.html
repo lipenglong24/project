@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout">
+
+<head>
+    <title th:text="#{screen.logout.header}"></title>
+</head>
+
+<body id="cas">
+<div layout:fragment="content">
+    <div class="alert alert-success text-center">
+        <h2 th:utext="#{screen.logout.header}"/>
+    </div>
+
+    <script th:inline="javascript">
+        window.setTimeout(function () {
+            window.location.href = "/";
+        }, 2000);
+    </script>
+</div>
+</body>
+</html>

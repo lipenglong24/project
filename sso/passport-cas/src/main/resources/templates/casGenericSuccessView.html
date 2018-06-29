@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout">
+<head>
+    <title>ABC-登录成功</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container container-fluid">
+        <div class="alert">
+            <blockquote>
+                <h1 class="text-success"><strong>登录成功！跳转到Abc项目的首页.</strong></h1>
+                <a href="http://portal.cas.com">http://portal.cas.com</a>
+            </blockquote>
+            <a href="/logout?service=http://passport.cas.com/login" class="btn btn-danger">退出登录</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
