@@ -10,16 +10,16 @@ import java.util.List;
  * @author petric
  * @since 1.0-SNAPSHOT
  */
-public class Memento {
+class Memento {
     int money;
     ArrayList<String> fruits;
 
-    public Memento(int money) {
+    Memento(int money) {
         this.money = money;
         fruits = new ArrayList<>();
     }
 
-    public int getMoney() {
+    int getMoney() {
         return money;
     }
 
